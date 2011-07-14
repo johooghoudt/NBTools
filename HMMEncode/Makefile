@@ -1,13 +1,13 @@
 CXX = g++
 CXXFLAGS += -I../include -I../include/cpplapack
 LDFLAGS += -lblas -llapack
-LIBS += ../lib/librandlibc.a ../lib/libcpplapack_plus.a ../lib/libNBHmm.a
+LIBS += ../lib/libNBHmm.a ../lib/libcpplapack_plus.a ../lib/librandlibc.a 
 
 TARGET = encode
 .PHONY: clean check-syntax
 
 encode: encode.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(LIBS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ $(LIBS) $(LDFLAGS) -o $@
 
 .cpp.o:
 	$(CXX) $(CXXFLAGS) -c $<
