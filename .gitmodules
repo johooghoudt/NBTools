@@ -1,0 +1,6 @@
+[submodule "cpplapack_plus"]
+	path = cpplapack_plus
+	url = https://github.com/tanichu/cpplapack_plus.git
+[submodule "NBHmm"]
+	path = NBHmm
+	url = https://github.com/tanichu/NBHmm.git
