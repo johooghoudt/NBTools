@@ -1,8 +1,13 @@
 #include "nbhmm.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 #include <vector>
 #include <algorithm>
 #include <sys/stat.h>
+#include <clx/table.h>
+#include <clx/tokenizer.h>
 
 #define DIRMODE (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)
 
@@ -30,6 +35,30 @@ void ReadConfig(Config &config)
   std::cin >> config.gamma;
   std::cin >> config.state;
   std::cin >> config.iteration;
+}
+
+dgematrix ReadDataFile(const char *filename, bool hasHeader = true)
+{
+  std::ifstream in(filename);
+  std::string buf;
+
+  
+  if(hasHeader){
+    getline(in, buf);
+  }
+
+
+  clx::char_separator<char> sep(',');
+  clx::table<std::string> table(in, clx::create_tokenizer<std::string>(sep));
+  dgematrix matrix((int) table.size(), table[0].size());
+  for (size_t i = 0; i < table.size(); i++){
+    for(unsigned int j = 0; j < table[i].size(); j++){
+      std::stringstream convertor(table[i][j]);
+      convertor >> matrix(i, j);
+    }
+  }
+
+  return matrix;
 }
 
 void WriteResults(const NBShdpHmm &hmm, const std::vector< std::vector<int> > &outputs)
@@ -71,10 +100,11 @@ int main(int argc, char *argv[])
 
   std::vector<dgematrix> observations;
   int input_count(argc - 1), min_dim(100);
-  observations.resize(input_count);
-  for(int i = 0; i < input_count; i++){
-    observations[i].read(argv[i+1]);
-    min_dim = std::min(min_dim, (int)observations[i].n);
+  
+  for(int i = 1; i <= input_count; i++){
+    dgematrix data = ReadDataFile(argv[i]);
+    observations.push_back(data);
+    min_dim = std::min(min_dim, (int)data.n);
   }
 
   NBShdpHmm estimate;
