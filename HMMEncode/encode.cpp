@@ -38,7 +38,7 @@ void ReadConfig(Config &config)
   std::cin >> config.iteration;
 }
 
-dgematrix ReadDataFile(const char *filename, bool hasHeader = true)
+dgematrix ReadDataFile(const char *filename, bool hasHeader = false)
 {
   std::ifstream in(filename);
   std::string buf;
