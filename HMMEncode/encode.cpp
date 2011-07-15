@@ -13,8 +13,8 @@
 
 struct Config
 {
+  const std::string dirname;
   int seed;
-  char dirname[BUFSIZ];
   double df; // IW's variance parameter
   double dS; // means variance parameter
   double kappa;
@@ -22,12 +22,13 @@ struct Config
   double gamma;
   int state;
   int iteration;
+  
+  Config(const char *dir) : dirname(dir) {}
 };
 
 void ReadConfig(Config &config)
 {
   std::cin >> config.seed;
-  std::cin >> config.dirname;
   std::cin >> config.df;
   std::cin >> config.dS;
   std::cin >> config.kappa;
@@ -90,18 +91,28 @@ void MakeAndChangeDirectory(const char *dirname)
   }
 }
 
+void usage(const char *program)
+{
+  std::cout << "usage: " << program << " DIRECTORY INPUT..." << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
-  Config config;
+  if(argc < 2){
+    usage(argv[0]);
+    return 1;
+  }
+  
+  Config config(argv[1]);
   ReadConfig(config);
   
   srand(config.seed);
   srandom(config.seed);
 
   std::vector<dgematrix> observations;
-  int input_count(argc - 1), min_dim(100);
+  int input_count(argc - 2), min_dim(100);
   
-  for(int i = 1; i <= input_count; i++){
+  for(int i = 2; i < argc; i++){
     dgematrix data = ReadDataFile(argv[i]);
     observations.push_back(data);
     min_dim = std::min(min_dim, (int)data.n);
@@ -123,7 +134,7 @@ int main(int argc, char *argv[])
   std::vector< std::vector<int> > outputs;
   outputs.resize(input_count);
 
-  MakeAndChangeDirectory(config.dirname);
+  MakeAndChangeDirectory(config.dirname.c_str());
   for(int i = 0; i < config.iteration; i++){
     // dcovector likely_log(config.iteration), num_log(config.iteration);    
     for(int j = 0; j < input_count; j++){
