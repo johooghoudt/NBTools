@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <clx/table.h>
 #include <clx/tokenizer.h>
+#include <libgen.h>
 
 #define DIRMODE (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)
 
@@ -62,21 +63,20 @@ dgematrix ReadDataFile(const char *filename, bool hasHeader = false)
   return matrix;
 }
 
-void WriteResults(const NBShdpHmm &hmm, const std::vector< std::vector<int> > &outputs)
+void WriteResults(const NBShdpHmm &hmm, const std::vector< std::vector<int> > &outputs, const std::vector<char *> &filenames)
 {
   char filename[BUFSIZ];
 
-  for(int i = 0; i < hmm.G.size(); i++){
-    sprintf(filename, "%d_mu.dco", i);
+  for(unsigned int i = 0; i < hmm.G.size(); i++){
+    sprintf(filename, "mu-%d.dco", i);
     hmm.G[i].Mu.write(filename);
-    sprintf(filename, "%d_sig.dge", i);
+    sprintf(filename, "sig-%d.dge", i);
     hmm.G[i].Sig.write(filename);
   }
 
-  for(int i = 0; i < outputs.size(); i++){
+  for(unsigned int i = 0; i < outputs.size(); i++){
     std::vector<int> out = outputs[i];
-    sprintf(filename, "%d_output.csv", i);
-    std::ofstream outfile(filename);
+    std::ofstream outfile(filenames[i]);
     for(std::vector<int>::const_iterator it = out.begin(); 
 	it != out.end(); ++it){
       outfile << *it << std::endl;
@@ -115,12 +115,14 @@ int main(int argc, char *argv[])
   srandom(config.seed);
 
   std::vector<dgematrix> observations;
+  std::vector<char *> filenames;
   int input_count(argc - 2), min_dim(100);
   
   for(int i = 2; i < argc; i++){
     dgematrix data = ReadDataFile(argv[i]);
     observations.push_back(data);
     min_dim = std::min(min_dim, (int)data.n);
+    filenames.push_back(basename(argv[i]));
   }
 
   NBShdpHmm estimate;
@@ -141,7 +143,6 @@ int main(int argc, char *argv[])
 
   MakeAndChangeDirectory(config.dirname.c_str());
   for(int i = 0; i < config.iteration; i++){
-    // dcovector likely_log(config.iteration), num_log(config.iteration);    
     for(int j = 0; j < input_count; j++){
       dgematrix backward;
       backward = BackwardFiltering(estimate, observations[j]);
@@ -150,9 +151,9 @@ int main(int argc, char *argv[])
     estimate.Update_shdp_multi(observations, outputs);
 
     char dirname[BUFSIZ];
-    sprintf(dirname, "%d_itr", i);
+    sprintf(dirname, "iteration-%d", i);
     MakeAndChangeDirectory(dirname);
-    WriteResults(estimate, outputs);
+    WriteResults(estimate, outputs, filenames);
     chdir("..");
   }
 
