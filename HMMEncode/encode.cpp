@@ -74,8 +74,13 @@ void WriteResults(const NBShdpHmm &hmm, const std::vector< std::vector<int> > &o
   }
 
   for(int i = 0; i < outputs.size(); i++){
-    sprintf(filename, "%d_output.dco", i);
-    dco(outputs[i]).write(filename);
+    std::vector<int> out = outputs[i];
+    sprintf(filename, "%d_output.csv", i);
+    std::ofstream outfile(filename);
+    for(std::vector<int>::const_iterator it = out.begin(); 
+	it != out.end(); ++it){
+      outfile << *it << std::endl;
+    }
   }
 }
 

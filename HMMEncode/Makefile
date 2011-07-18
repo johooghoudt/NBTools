@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS += -I../include -I../include/cpplapack
+CXXFLAGS += -g -I../include -I../include/cpplapack
 LDFLAGS += -lblas -llapack
 LIBS += ../lib/libNBHmm.a ../lib/libcpplapack_plus.a ../lib/librandlibc.a 
 
