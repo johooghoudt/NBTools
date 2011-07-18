@@ -14,7 +14,7 @@
 
 struct Config
 {
-  const std::string dirname;
+  const std::string dir;
   int seed;
   double df; // IW's variance parameter
   double dS; // means variance parameter
@@ -24,7 +24,7 @@ struct Config
   int state;
   int iteration;
   
-  Config(const char *dir) : dirname(dir) {}
+  Config(const char *dir) : dir(dir) {}
 };
 
 void ReadConfig(Config &config)
@@ -84,14 +84,14 @@ void WriteResults(const NBShdpHmm &hmm, const std::vector< std::vector<int> > &o
   }
 }
 
-void MakeAndChangeDirectory(const char *dirname)
+void MakeAndChangeDirectory(const char *dir)
 {
-  if(mkdir(dirname, DIRMODE) != 0){
-    std::cerr << "can't make directory " << dirname << std::endl;
+  if(mkdir(dir, DIRMODE) != 0){
+    std::cerr << "can't make directory " << dir << std::endl;
     exit(1);
   }
-  if(chdir(dirname) != 0){
-    std::cerr << "can't change directory " << dirname << std::endl;
+  if(chdir(dir) != 0){
+    std::cerr << "can't change directory " << dir << std::endl;
     exit(1);
   }
 }
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
   std::vector< std::vector<int> > outputs;
   outputs.resize(input_count);
 
-  MakeAndChangeDirectory(config.dirname.c_str());
+  MakeAndChangeDirectory(config.dir.c_str());
   for(int i = 0; i < config.iteration; i++){
     for(int j = 0; j < input_count; j++){
       dgematrix backward;
@@ -150,9 +150,9 @@ int main(int argc, char *argv[])
     }
     estimate.Update_shdp_multi(observations, outputs);
 
-    char dirname[BUFSIZ];
-    sprintf(dirname, "iteration-%d", i);
-    MakeAndChangeDirectory(dirname);
+    char dir[BUFSIZ];
+    sprintf(dir, "iteration-%d", i);
+    MakeAndChangeDirectory(dir);
     WriteResults(estimate, outputs, filenames);
     chdir("..");
   }
