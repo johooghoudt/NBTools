@@ -63,7 +63,7 @@ dgematrix ReadDataFile(const char *filename, bool hasHeader = false)
   return matrix;
 }
 
-void WriteResults(const NBShdpHmm &hmm, const std::vector< std::vector<int> > &outputs, const std::vector<char *> &filenames)
+void WriteResults(const NBShdpHmm &hmm, const std::vector< std::vector<int> > &outputs, const std::vector<std::string> &filenames)
 {
   char filename[BUFSIZ];
 
@@ -76,7 +76,7 @@ void WriteResults(const NBShdpHmm &hmm, const std::vector< std::vector<int> > &o
 
   for(unsigned int i = 0; i < outputs.size(); i++){
     std::vector<int> out = outputs[i];
-    std::ofstream outfile(filenames[i]);
+    std::ofstream outfile(filenames[i].c_str());
     for(std::vector<int>::const_iterator it = out.begin(); 
 	it != out.end(); ++it){
       outfile << *it << std::endl;
@@ -115,15 +115,17 @@ int main(int argc, char *argv[])
   srandom(config.seed);
 
   std::vector<dgematrix> observations;
-  std::vector<char *> filenames;
+  std::vector<std::string> filenames;
   int input_count(argc - 2), min_dim(100);
   
   for(int i = 2; i < argc; i++){
     dgematrix data = ReadDataFile(argv[i]);
     observations.push_back(data);
     min_dim = std::min(min_dim, (int)data.n);
-    filenames.push_back(basename(argv[i]));
+    std::string filename = basename(argv[i]);
+    filenames.push_back(filename);
   }
+  
 
   NBShdpHmm estimate;
   estimate.resize(config.state, min_dim);
